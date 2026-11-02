@@ -2140,101 +2140,209 @@ function drawMachine_tako(shake){
 
 // ─── 器（ガラス鉢＋木台） ────────────────────────────────
 function drawBowl(){
-  const woodG=cx.createLinearGradient(ICE_X-50,ICE_Y+52,ICE_X+50,ICE_Y+52);
-  woodG.addColorStop(0,'#8B5E2A'); woodG.addColorStop(0.5,'#C89040'); woodG.addColorStop(1,'#8B5E2A');
+  // 落ち影（ドロップシャドウ代わり）
+  cx.save();
+  cx.globalAlpha=0.22;
+  const shdG=cx.createRadialGradient(ICE_X+4,ICE_Y+64,2,ICE_X+4,ICE_Y+66,70);
+  shdG.addColorStop(0,'rgba(40,50,80,0.55)'); shdG.addColorStop(1,'rgba(40,50,80,0)');
+  cx.fillStyle=shdG;
+  cx.beginPath(); cx.ellipse(ICE_X+4,ICE_Y+65,65,14,0,0,Math.PI*2); cx.fill();
+  cx.restore();
+
+  // 木台（3段グラデ＋木目ライン）
+  const woodG=cx.createLinearGradient(ICE_X-50,ICE_Y+50,ICE_X+50,ICE_Y+66);
+  woodG.addColorStop(0,'#6A3A10');
+  woodG.addColorStop(0.25,'#B07030');
+  woodG.addColorStop(0.55,'#D4A050');
+  woodG.addColorStop(0.8,'#C89040');
+  woodG.addColorStop(1,'#8A5018');
   cx.fillStyle=woodG; rr(ICE_X-50,ICE_Y+50,100,16,4); cx.fill();
-  cx.strokeStyle='#5A3A10'; cx.lineWidth=1.5; cx.stroke();
-  cx.save(); cx.globalAlpha=0.15; cx.fillStyle='#204060';
-  cx.beginPath(); cx.ellipse(ICE_X,ICE_Y+52,68,12,0,0,Math.PI*2); cx.fill(); cx.restore();
-  const bG=cx.createLinearGradient(ICE_X-68,ICE_Y,ICE_X+68,ICE_Y+52);
-  bG.addColorStop(0,'rgba(220,240,255,0.70)');
-  bG.addColorStop(0.5,'rgba(240,252,255,0.85)');
-  bG.addColorStop(1,'rgba(200,230,250,0.60)');
-  cx.fillStyle=bG;
+  cx.strokeStyle='rgba(60,28,6,0.55)'; cx.lineWidth=1.5; cx.stroke();
+  // 木目ライン
+  cx.strokeStyle='rgba(60,28,6,0.12)'; cx.lineWidth=1;
+  [-24,-10,4,18,32].forEach(dx=>{
+    cx.beginPath(); cx.moveTo(ICE_X+dx,ICE_Y+51); cx.lineTo(ICE_X+dx+8,ICE_Y+65); cx.stroke();
+  });
+  // 台上端ハイライト
+  cx.strokeStyle='rgba(255,210,130,0.38)'; cx.lineWidth=1.5; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(ICE_X-46,ICE_Y+52); cx.lineTo(ICE_X+46,ICE_Y+52); cx.stroke();
+
+  // 器の外側リム（ガラスの厚み表現）
+  cx.save();
+  const rimG=cx.createLinearGradient(ICE_X-72,ICE_Y,ICE_X+72,ICE_Y+56);
+  rimG.addColorStop(0,'rgba(200,232,255,0.60)');
+  rimG.addColorStop(0.5,'rgba(220,242,255,0.45)');
+  rimG.addColorStop(1,'rgba(180,218,248,0.30)');
+  cx.fillStyle=rimG;
+  cx.beginPath();
+  cx.moveTo(ICE_X-70,ICE_Y+6);
+  cx.bezierCurveTo(ICE_X-74,ICE_Y+58,ICE_X+74,ICE_Y+58,ICE_X+70,ICE_Y+6);
+  cx.closePath(); cx.fill();
+  cx.strokeStyle='rgba(100,175,230,0.55)'; cx.lineWidth=2; cx.stroke();
+  cx.restore();
+
+  // 器の内側（影で奥行き）
+  cx.save();
+  const innerG=cx.createLinearGradient(ICE_X-68,ICE_Y+8,ICE_X+68,ICE_Y+56);
+  innerG.addColorStop(0,'rgba(215,238,255,0.55)');
+  innerG.addColorStop(0.5,'rgba(238,250,255,0.82)');
+  innerG.addColorStop(1,'rgba(195,228,252,0.45)');
+  cx.fillStyle=innerG;
   cx.beginPath();
   cx.moveTo(ICE_X-68,ICE_Y+8);
   cx.bezierCurveTo(ICE_X-70,ICE_Y+56,ICE_X+70,ICE_Y+56,ICE_X+68,ICE_Y+8);
   cx.closePath(); cx.fill();
-  cx.strokeStyle='rgba(140,200,240,0.9)'; cx.lineWidth=2; cx.stroke();
-  cx.strokeStyle='rgba(255,255,255,0.7)'; cx.lineWidth=2.5;
+  cx.restore();
+
+  // 器の縁ハイライト（強い光沢）
+  cx.strokeStyle='rgba(255,255,255,0.75)'; cx.lineWidth=3; cx.lineCap='round';
   cx.beginPath();
   cx.moveTo(ICE_X-62,ICE_Y+12);
-  cx.bezierCurveTo(ICE_X-55,ICE_Y+5,ICE_X+55,ICE_Y+5,ICE_X+62,ICE_Y+12);
+  cx.bezierCurveTo(ICE_X-52,ICE_Y+3,ICE_X+52,ICE_Y+3,ICE_X+62,ICE_Y+12);
+  cx.stroke();
+  // 縁の二重ライン
+  cx.strokeStyle='rgba(255,255,255,0.30)'; cx.lineWidth=1.5;
+  cx.beginPath();
+  cx.moveTo(ICE_X-58,ICE_Y+16);
+  cx.bezierCurveTo(ICE_X-48,ICE_Y+8,ICE_X+48,ICE_Y+8,ICE_X+58,ICE_Y+16);
+  cx.stroke();
+  // 器の側面反射（左）
+  cx.strokeStyle='rgba(255,255,255,0.22)'; cx.lineWidth=2;
+  cx.beginPath();
+  cx.moveTo(ICE_X-70,ICE_Y+10);
+  cx.bezierCurveTo(ICE_X-72,(ICE_Y+10+ICE_Y+54)/2,ICE_X-68,ICE_Y+48,ICE_X-30,ICE_Y+55);
   cx.stroke();
 }
 
 // ─── レインボーシロップ（鮮やかな虹色・混色防止） ─────────────
 const RAINBOW_COLOR='#C040E8'; // レインボーシロップ識別色
-// 縦方向の独立した5色バンドで描画し、色重ねによる濁り/紫色化を防ぐ
+// 染み込みバンド＋上端フェードで自然なグラデーション
 function drawRainbowSyrup(iceTop, iceH, alpha){
   cx.save();
-  cx.globalAlpha=Math.min(1, alpha*0.90);
-  // 氷の山形でクリップ（虹色が枠からはみ出さないよう）
+  // 氷の山形でクリップ
   cx.beginPath();
   cx.moveTo(ICE_X-64, ICE_Y+8);
   cx.bezierCurveTo(ICE_X-64, ICE_Y-iceH+18, ICE_X-44, iceTop, ICE_X, iceTop);
   cx.bezierCurveTo(ICE_X+44, iceTop, ICE_X+64, ICE_Y-iceH+18, ICE_X+64, ICE_Y+8);
   cx.closePath();
   cx.clip();
-  // 赤・黄・緑・水色・ピンク の独立バンド（縦並び・境界で混色しない）
   const top=iceTop, bot=ICE_Y+8;
-  const cols=['#FF5060','#FFE040','#50D060','#50C8FF','#FF80C8'];
-  const bh=(bot-top)/cols.length;
-  cols.forEach((c,i)=>{
-    cx.fillStyle=c;
-    cx.fillRect(ICE_X-70, top+i*bh, 140, bh+1);
+  const bands=[
+    {col:'#FF4455',a:0.90},{col:'#FFD818',a:0.88},
+    {col:'#3AC855',a:0.88},{col:'#28B8F8',a:0.88},{col:'#FF70CC',a:0.90},
+  ];
+  bands.forEach(({col,a},i)=>{
+    const bandT=top+i*(bot-top)/bands.length;
+    const bandB=top+(i+1)*(bot-top)/bands.length;
+    // 上で鮮やか・下でフェードする染み込みグラデ
+    const bg=cx.createLinearGradient(0,bandT,0,bandB);
+    bg.addColorStop(0,  col+'E8');
+    bg.addColorStop(0.5,col+'C0');
+    bg.addColorStop(1,  col+'60');
+    cx.globalAlpha=Math.min(1,alpha*a);
+    cx.fillStyle=bg;
+    cx.fillRect(ICE_X-70,bandT,140,bandB-bandT+1);
   });
-  // 山の頂に当たる光（薄い白ハイライト・色は混ぜない）
-  cx.globalAlpha=Math.min(1, alpha*0.16);
-  const hg=cx.createLinearGradient(ICE_X,iceTop,ICE_X,iceTop+(bot-iceTop)*0.45);
-  hg.addColorStop(0,'rgba(255,255,255,0.5)');
+  // 頂部の白いグロー（シロップが乗った直下の白さを残す）
+  cx.globalAlpha=Math.min(1,alpha*0.20);
+  const hg=cx.createLinearGradient(ICE_X,top,ICE_X,top+(bot-top)*0.35);
+  hg.addColorStop(0,'rgba(255,255,255,0.7)');
   hg.addColorStop(1,'rgba(255,255,255,0)');
   cx.fillStyle=hg;
-  cx.fillRect(ICE_X-70, top, 140, (bot-top)*0.5);
+  cx.fillRect(ICE_X-70,top,140,(bot-top)*0.35);
+  cx.globalAlpha=1;
   cx.restore();
 }
 
-// ─── 氷（シロップ・シマー） ───────────────────────────────
+// ─── 氷（シロップ・シャリシャリ質感・シマー） ─────────────────
 function drawIce(taps,syrupCol,syrupAlpha){
   if(taps===0) return;
   const ratio=taps/ICE_MAX, iceH=ratio*88;
   const iceTop=ICE_Y-iceH+8;
   cx.save();
-  const ig=cx.createLinearGradient(ICE_X,iceTop,ICE_X,ICE_Y+8);
-  ig.addColorStop(0,'#F0FAFF'); ig.addColorStop(0.4,'#E0F6FF'); ig.addColorStop(1,'#C8EEFF');
-  cx.fillStyle=ig;
-  cx.beginPath();
-  cx.moveTo(ICE_X-64,ICE_Y+8);
-  cx.bezierCurveTo(ICE_X-64,ICE_Y-iceH+18,ICE_X-44,iceTop,ICE_X,iceTop);
-  cx.bezierCurveTo(ICE_X+44,iceTop,ICE_X+64,ICE_Y-iceH+18,ICE_X+64,ICE_Y+8);
-  cx.closePath(); cx.fill();
-  cx.strokeStyle='rgba(255,255,255,0.55)'; cx.lineWidth=1;
-  for(let i=0;i<5;i++){
-    const ly=iceTop+(ICE_Y+8-iceTop)*(i/5), hw=58*(1-i/6);
-    cx.beginPath(); cx.moveTo(ICE_X-hw,ly+4);
-    cx.quadraticCurveTo(ICE_X,ly,ICE_X+hw,ly+4); cx.stroke();
+
+  // 氷の山パス（後で繰り返し使う）
+  function iceShape(){
+    cx.beginPath();
+    cx.moveTo(ICE_X-64,ICE_Y+8);
+    cx.bezierCurveTo(ICE_X-64,ICE_Y-iceH+18,ICE_X-44,iceTop,ICE_X,iceTop);
+    cx.bezierCurveTo(ICE_X+44,iceTop,ICE_X+64,ICE_Y-iceH+18,ICE_X+64,ICE_Y+8);
+    cx.closePath();
   }
+
+  // 1. 白い氷ベース（上が輝き・根元が薄い影青）
+  const ig=cx.createLinearGradient(ICE_X,iceTop,ICE_X,ICE_Y+8);
+  ig.addColorStop(0,   '#FAFEFF');
+  ig.addColorStop(0.15,'#EEF8FF');
+  ig.addColorStop(0.6, '#D8EEFF');
+  ig.addColorStop(1,   '#C4DFF5');
+  cx.fillStyle=ig;
+  iceShape(); cx.fill();
+
+  // 2. シロップ（クリップ内でのみ描画）
   if(syrupCol && syrupAlpha>0){
+    cx.save();
+    iceShape(); cx.clip();
     const cols=Array.isArray(syrupCol)?syrupCol:[syrupCol];
-    const alphaEach=(syrupAlpha*0.78)/cols.length;
+    const alphaEach=(syrupAlpha*0.85)/cols.length;
     cols.forEach(col=>{
       if(col===RAINBOW_COLOR){
-        // レインボー：鮮やかな虹色バンドで描画（色重ねによる濁り/紫色化を防止）
         drawRainbowSyrup(iceTop, iceH, syrupAlpha);
       } else {
+        // 頂点直下から根元に染み込む放射グラデ
         cx.globalAlpha=alphaEach;
-        const rg=cx.createRadialGradient(ICE_X,ICE_Y,5,ICE_X,iceTop+iceH*0.3,iceH*0.9);
-        rg.addColorStop(0,col+'FF'); rg.addColorStop(0.5,col+'BB'); rg.addColorStop(1,col+'44');
+        const rg=cx.createRadialGradient(
+          ICE_X, iceTop+4, 2,
+          ICE_X, iceTop+iceH*0.55, iceH*1.05
+        );
+        rg.addColorStop(0,   col+'F8');  // 頂点：鮮やか
+        rg.addColorStop(0.25,col+'D8');  // 上半：染み込み
+        rg.addColorStop(0.55,col+'90');  // 中間：薄れる
+        rg.addColorStop(0.80,col+'40');  // 下側：ほぼ白
+        rg.addColorStop(1,   col+'10');  // 根元：ほぼ白い氷
         cx.fillStyle=rg;
-        cx.beginPath();
-        cx.moveTo(ICE_X-64,ICE_Y+8);
-        cx.bezierCurveTo(ICE_X-64,ICE_Y-iceH+18,ICE_X-44,iceTop,ICE_X,iceTop);
-        cx.bezierCurveTo(ICE_X+44,iceTop,ICE_X+64,ICE_Y-iceH+18,ICE_X+64,ICE_Y+8);
-        cx.closePath(); cx.fill();
+        cx.fillRect(ICE_X-70,iceTop,140,iceH+4);
       }
     });
     cx.globalAlpha=1;
+    cx.restore();
   }
+
+  // 3. 氷の粒感テクスチャ（疑似ランダム小白粒・シード固定）
+  cx.save();
+  iceShape(); cx.clip();
+  for(let i=0;i<38;i++){
+    // シード固定 LCG（フレームをまたいで変わらない）
+    const s=(i*1664525+1013904223)&0x7fffffff;
+    const px=ICE_X-60+((s&0x7ff)/0x7ff)*120;
+    const py=iceTop+3+(((s>>11)&0x3ff)/0x3ff)*(iceH-6);
+    const pr=0.7+(((s>>21)&0xff)/0xff)*1.6;
+    const bri=0.45+(((s>>4)&0x7f)/0x7f)*0.55;
+    cx.globalAlpha=bri*0.60;
+    cx.fillStyle='rgba(255,255,255,1)';
+    cx.beginPath(); cx.arc(px,py,pr,0,Math.PI*2); cx.fill();
+  }
+  cx.globalAlpha=1;
+  cx.restore();
+
+  // 4. 光沢シマーライン（斜めの弧）
+  cx.save();
+  iceShape(); cx.clip();
+  cx.strokeStyle='rgba(255,255,255,0.40)'; cx.lineWidth=1.2; cx.lineCap='round';
+  for(let i=0;i<5;i++){
+    const ly=iceTop+6+i*((ICE_Y+8-iceTop-12)/5);
+    const hw=56*(1-i/6);
+    cx.beginPath();
+    cx.moveTo(ICE_X-hw,ly+3.5);
+    cx.quadraticCurveTo(ICE_X-hw*0.15,ly-1.5,ICE_X+hw*0.5,ly+1);
+    cx.stroke();
+  }
+  cx.restore();
+
+  // 5. 氷の輪郭（青白）
+  cx.strokeStyle='rgba(180,218,248,0.55)'; cx.lineWidth=1.5;
+  iceShape(); cx.stroke();
+
   cx.restore();
 }
 
@@ -3459,231 +3567,456 @@ function drawZukanCanvas(canvas, entry, isFound) {
   c.clearRect(0, 0, W, H);
 
   // ── 共通座標 ──────────────────────────────────────────
-  const cx0 = W / 2;           // 水平中心
-  const bowlT = 42;            // 器の上端Y
-  const bowlB = 66;            // 器の底Y
-  const iceBaseY = bowlT + 1;  // 氷の根元Y
-  const icePeakY = 12;         // 氷の頂点Y
-  const bowlHalfW = 26;        // 器の半幅
+  const cx0 = W / 2;
+  const bowlT  = 44;   // 器の上端Y
+  const bowlB  = 67;   // 器の底Y（内側）
+  const bowlR  = 70;   // 器の底Y（外リム）
+  const iceBaseY = bowlT;
+  const icePeakY = 10;
+  const bowlHalfW = 26;
 
   // 氷の山パス（clipping 用）
   function icePath() {
     c.beginPath();
     c.moveTo(cx0 - bowlHalfW, iceBaseY);
-    c.bezierCurveTo(cx0 - bowlHalfW, icePeakY + 8, cx0 - 16, icePeakY, cx0, icePeakY);
-    c.bezierCurveTo(cx0 + 16, icePeakY, cx0 + bowlHalfW, icePeakY + 8, cx0 + bowlHalfW, iceBaseY);
+    c.bezierCurveTo(cx0 - bowlHalfW, icePeakY + 10, cx0 - 14, icePeakY, cx0, icePeakY);
+    c.bezierCurveTo(cx0 + 14, icePeakY, cx0 + bowlHalfW, icePeakY + 10, cx0 + bowlHalfW, iceBaseY);
+    c.closePath();
+  }
+  // 器の内側パス
+  function bowlPath() {
+    c.beginPath();
+    c.moveTo(cx0 - bowlHalfW, bowlT);
+    c.bezierCurveTo(cx0 - bowlHalfW - 3, bowlB, cx0 + bowlHalfW + 3, bowlB, cx0 + bowlHalfW, bowlT);
     c.closePath();
   }
 
   if (!isFound) {
-    // ── 未発見：半透明グレーシルエット ───────────────────
+    // ── 未発見：半透明グレーシルエット（かき氷の形） ─────
     c.save();
-    c.globalAlpha = 0.28;
-
+    // 台の影
+    c.globalAlpha = 0.18;
+    c.fillStyle = '#505060';
+    c.beginPath(); c.ellipse(cx0 + 2, bowlR + 4, 18, 4, 0, 0, Math.PI * 2); c.fill();
     // 台
-    c.fillStyle = '#888';
-    c.beginPath(); c.ellipse(cx0, bowlB + 3, 20, 5, 0, 0, Math.PI * 2); c.fill();
+    c.globalAlpha = 0.22;
+    c.fillStyle = '#999';
+    c.beginPath(); c.ellipse(cx0, bowlR + 1, 20, 4.5, 0, 0, Math.PI * 2); c.fill();
     // 器
-    c.fillStyle = '#AAA';
-    c.beginPath();
-    c.moveTo(cx0 - bowlHalfW, bowlT);
-    c.bezierCurveTo(cx0 - bowlHalfW - 2, bowlB, cx0 + bowlHalfW + 2, bowlB, cx0 + bowlHalfW, bowlT);
-    c.closePath(); c.fill();
+    c.globalAlpha = 0.20;
+    c.fillStyle = '#BBB';
+    bowlPath(); c.fill();
     // 氷
-    c.fillStyle = '#CCC';
+    c.globalAlpha = 0.24;
+    c.fillStyle = '#DDD';
     icePath(); c.fill();
-    // ? テキスト
-    c.globalAlpha = 0.55;
-    c.fillStyle = '#666';
-    c.font = 'bold 20px sans-serif';
+    // 謎のベール
+    c.globalAlpha = 0.5;
+    c.fillStyle = '#555';
+    c.font = 'bold 18px "Hiragino Sans","Yu Gothic",sans-serif';
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('?', cx0, H / 2 - 2);
+    c.fillText('?', cx0, H / 2 - 4);
     c.restore();
     return;
   }
 
-  // ── 発見済み：色付き立体描画 ──────────────────────────
+  // ── 発見済み：リアル立体描画 ──────────────────────────
 
-  // 1. 背景（空の薄いグラデ）
+  // 1. 背景（ソフトなそら色→パール）
   const bgG = c.createLinearGradient(0, 0, 0, H);
-  bgG.addColorStop(0, '#D4EEFF');
-  bgG.addColorStop(1, '#F0F8E8');
+  bgG.addColorStop(0, '#CBE8FF');
+  bgG.addColorStop(0.6, '#EEF8FF');
+  bgG.addColorStop(1, '#F5F0E8');
   c.fillStyle = bgG; c.fillRect(0, 0, W, H);
 
-  // 2. 木台
-  const woodG = c.createLinearGradient(cx0 - 22, bowlB + 1, cx0 + 22, bowlB + 1);
-  woodG.addColorStop(0, '#B07A30'); woodG.addColorStop(0.5, '#D4A050'); woodG.addColorStop(1, '#B07A30');
-  c.fillStyle = woodG;
-  c.beginPath(); c.ellipse(cx0, bowlB + 3, 22, 5, 0, 0, Math.PI * 2); c.fill();
-  c.strokeStyle = '#8A5A18'; c.lineWidth = 1; c.stroke();
-
-  // 3. ガラス器（半透明）
+  // 2. 台の落ち影（ドロップシャドウ代わり）
   c.save();
-  const bowlG = c.createLinearGradient(cx0 - bowlHalfW, bowlT, cx0 + bowlHalfW, bowlB);
-  bowlG.addColorStop(0, 'rgba(210,238,255,0.6)');
-  bowlG.addColorStop(1, 'rgba(190,226,255,0.3)');
-  c.fillStyle = bowlG;
-  c.beginPath();
-  c.moveTo(cx0 - bowlHalfW, bowlT);
-  c.bezierCurveTo(cx0 - bowlHalfW - 2, bowlB, cx0 + bowlHalfW + 2, bowlB, cx0 + bowlHalfW, bowlT);
-  c.closePath(); c.fill();
-  c.strokeStyle = 'rgba(140,200,240,0.8)'; c.lineWidth = 1.5; c.stroke();
+  c.globalAlpha = 0.22;
+  const shdG = c.createRadialGradient(cx0 + 2, bowlR + 5, 1, cx0 + 2, bowlR + 5, 20);
+  shdG.addColorStop(0, 'rgba(60,60,90,0.6)');
+  shdG.addColorStop(1, 'rgba(60,60,90,0)');
+  c.fillStyle = shdG;
+  c.beginPath(); c.ellipse(cx0 + 2, bowlR + 5, 20, 5, 0, 0, Math.PI * 2); c.fill();
   c.restore();
 
-  // 4. 氷の山（白ベース）
+  // 3. 木台（3段グラデ＋木目ライン）
+  c.save();
+  const woodG = c.createLinearGradient(cx0 - 22, bowlR - 1, cx0 + 22, bowlR + 6);
+  woodG.addColorStop(0,   '#7A4A18');
+  woodG.addColorStop(0.3, '#C4883A');
+  woodG.addColorStop(0.65,'#D8A050');
+  woodG.addColorStop(1,   '#9A6028');
+  c.fillStyle = woodG;
+  c.beginPath(); c.ellipse(cx0, bowlR + 2, 22, 5, 0, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = 'rgba(80,40,8,0.6)'; c.lineWidth = 1; c.stroke();
+  // 木目ライン
+  c.strokeStyle = 'rgba(80,40,8,0.18)'; c.lineWidth = 0.7;
+  [-6, 0, 6].forEach(dx => {
+    c.beginPath(); c.moveTo(cx0 + dx - 4, bowlR - 1); c.lineTo(cx0 + dx + 4, bowlR + 4); c.stroke();
+  });
+  // 台上端のハイライト
+  c.strokeStyle = 'rgba(255,220,160,0.45)'; c.lineWidth = 1;
+  c.beginPath(); c.ellipse(cx0, bowlR, 20, 3.5, 0, Math.PI, Math.PI * 2); c.stroke();
+  c.restore();
+
+  // 4. 器の外側リム（厚み表現）
+  c.save();
+  const rimG = c.createLinearGradient(cx0 - bowlHalfW, bowlT, cx0 + bowlHalfW, bowlR);
+  rimG.addColorStop(0, 'rgba(180,220,248,0.55)');
+  rimG.addColorStop(0.5,'rgba(210,238,255,0.38)');
+  rimG.addColorStop(1, 'rgba(160,210,245,0.28)');
+  c.fillStyle = rimG;
+  c.beginPath();
+  c.moveTo(cx0 - bowlHalfW - 2, bowlT);
+  c.bezierCurveTo(cx0 - bowlHalfW - 4, bowlR + 1, cx0 + bowlHalfW + 4, bowlR + 1, cx0 + bowlHalfW + 2, bowlT);
+  c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(120,190,235,0.65)'; c.lineWidth = 1.5; c.stroke();
+  c.restore();
+
+  // 5. 器の内側（浅い影で奥行き）
+  c.save();
+  const innerG = c.createLinearGradient(cx0, bowlT, cx0, bowlR);
+  innerG.addColorStop(0, 'rgba(220,242,255,0.55)');
+  innerG.addColorStop(1, 'rgba(180,220,250,0.25)');
+  c.fillStyle = innerG;
+  bowlPath(); c.fill();
+  c.restore();
+
+  // 6. 氷の山（クリップ領域内で全描画）
   c.save();
   icePath(); c.clip();
+
+  // 6a. 白い氷ベース（上が輝き・下が影青）
   const iceG = c.createLinearGradient(cx0, icePeakY, cx0, iceBaseY);
-  iceG.addColorStop(0, '#F4FEFF'); iceG.addColorStop(1, '#D8F0FF');
+  iceG.addColorStop(0,   '#FAFEFF');
+  iceG.addColorStop(0.25,'#EEF8FF');
+  iceG.addColorStop(0.7, '#D8EEFF');
+  iceG.addColorStop(1,   '#C8E4F8');
   c.fillStyle = iceG; c.fillRect(0, 0, W, H);
 
-  // 5. シロップ色を氷に乗せる
+  // 6b. シロップ染み込み
   const syrupNames = entry.syrupNames;
   if (syrupNames.includes('レインボー')) {
-    // レインボー：5色縦バンド
-    const rbCols = ['#FF5060','#FFE040','#50D060','#50C8FF','#FF80C8'];
-    const bh = (iceBaseY - icePeakY) / rbCols.length;
-    rbCols.forEach((col, i) => {
-      c.fillStyle = col;
-      c.globalAlpha = 0.82;
-      c.fillRect(0, icePeakY + i * bh, W, bh + 1);
+    // レインボー：5色バンド + 各境界をソフトにぼかす
+    const rbCols = [
+      { col:'#FF5060', alpha:0.88 },
+      { col:'#FFD820', alpha:0.86 },
+      { col:'#3CC858', alpha:0.86 },
+      { col:'#30B8F8', alpha:0.86 },
+      { col:'#FF70CC', alpha:0.88 },
+    ];
+    const iceH = iceBaseY - icePeakY;
+    rbCols.forEach(({col, alpha}, i) => {
+      const bandT = icePeakY + i * iceH / rbCols.length;
+      const bandB = icePeakY + (i + 1) * iceH / rbCols.length;
+      // 上半を濃く・下半をフェードして染み込み感
+      const bg = c.createLinearGradient(0, bandT, 0, bandB);
+      bg.addColorStop(0,   col + 'E0');
+      bg.addColorStop(0.5, col + 'C0');
+      bg.addColorStop(1,   col + '70');
+      c.globalAlpha = alpha;
+      c.fillStyle = bg;
+      c.fillRect(0, bandT, W, bandB - bandT + 1);
     });
+    c.globalAlpha = 1;
   } else {
-    // 単色 or 2色：放射状グラデ（複数は alpha 分割）
-    const alphaEach = 0.76 / syrupNames.length;
-    syrupNames.forEach(sn => {
+    // 単色 or 2色：頂点から染み込む放射グラデ
+    syrupNames.forEach((sn, idx) => {
       const sc = ZUKAN_SYRUP_COLOR[sn] || { main:'#888', light:'#CCC' };
-      c.globalAlpha = alphaEach;
-      const rg = c.createRadialGradient(cx0, iceBaseY, 2, cx0, icePeakY + 6, (iceBaseY - icePeakY) * 0.95);
-      rg.addColorStop(0, sc.main + 'FF');
-      rg.addColorStop(0.55, sc.main + 'CC');
-      rg.addColorStop(1, sc.main + '44');
+      const iceH = iceBaseY - icePeakY;
+      // 頂点付近が鮮やか→根元に向かって薄まる「染み込み」グラデ
+      const rg = c.createRadialGradient(
+        cx0, icePeakY + 4, 1,
+        cx0, icePeakY + iceH * 0.55, iceH * 1.1
+      );
+      rg.addColorStop(0,    sc.main + 'F8');  // 頂点直下：最も鮮やか
+      rg.addColorStop(0.28, sc.main + 'D0');  // 中間上：染み込み
+      rg.addColorStop(0.58, sc.main + '80');  // 中間下：薄れる
+      rg.addColorStop(0.82, sc.light + '40'); // 根元近く：白っぽい
+      rg.addColorStop(1,    sc.main + '08');  // 根元：ほぼ白い氷
+      c.globalAlpha = syrupNames.length > 1 ? 0.70 : 0.88;
       c.fillStyle = rg;
       c.fillRect(0, 0, W, H);
     });
+    c.globalAlpha = 1;
+  }
+
+  // 6c. 氷の粒感テクスチャ（疑似ランダムハイライト）
+  // シード固定で描画ごとに変わらないよう idx ベースで生成
+  const seedBase = (entry.id || '').split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+  function seededRng(n) {
+    // simple LCG
+    let s = (seedBase * 1664525 + n * 1013904223) & 0xffffffff;
+    return ((s >>> 0) % 1000) / 1000;
+  }
+  c.globalAlpha = 0.55;
+  for (let i = 0; i < 28; i++) {
+    const px = cx0 - bowlHalfW + seededRng(i * 3)     * bowlHalfW * 2;
+    const py = icePeakY       + seededRng(i * 3 + 1) * (iceBaseY - icePeakY);
+    const pr =                  0.8 + seededRng(i * 3 + 2) * 1.4;
+    const bright = 0.55 + seededRng(i * 7) * 0.45;
+    c.fillStyle = `rgba(255,255,255,${bright})`;
+    c.beginPath(); c.arc(px, py, pr, 0, Math.PI * 2); c.fill();
   }
   c.globalAlpha = 1;
 
-  // 6. 氷の光沢シマー
-  c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 1;
-  for (let i = 0; i < 3; i++) {
-    const ly = icePeakY + 5 + i * 8;
-    const hw = 18 - i * 4;
-    c.beginPath(); c.moveTo(cx0 - hw, ly + 2);
-    c.quadraticCurveTo(cx0, ly, cx0 + hw, ly + 2); c.stroke();
+  // 6d. 光沢シマーライン（左から右へ斜めに走る弧）
+  c.strokeStyle = 'rgba(255,255,255,0.38)'; c.lineWidth = 1.2; c.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const ly = icePeakY + 4 + i * 7;
+    const hw = 20 - i * 4;
+    c.beginPath();
+    c.moveTo(cx0 - hw, ly + 2.5);
+    c.quadraticCurveTo(cx0 - hw * 0.2, ly - 1, cx0 + hw * 0.6, ly + 1);
+    c.stroke();
   }
-  c.restore();
+  c.restore(); // clip 解除
 
-  // 7. 氷の輪郭
-  c.strokeStyle = 'rgba(200,230,255,0.7)'; c.lineWidth = 1;
+  // 7. 氷の輪郭（うっすら青白）
+  c.strokeStyle = 'rgba(180,220,248,0.55)'; c.lineWidth = 1.2;
   icePath(); c.stroke();
 
-  // 8. トッピング（小さく・アイコンで再現）
+  // 8. 器の縁ハイライト（ガラスの光沢）
+  c.save();
+  c.strokeStyle = 'rgba(255,255,255,0.72)'; c.lineWidth = 2; c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(cx0 - bowlHalfW + 5, bowlT + 1);
+  c.bezierCurveTo(cx0 - 8, bowlT - 2, cx0 + 8, bowlT - 2, cx0 + bowlHalfW - 5, bowlT + 1);
+  c.stroke();
+  // 器の側面反射（左）
+  c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(cx0 - bowlHalfW - 1, bowlT + 4);
+  c.bezierCurveTo(cx0 - bowlHalfW - 2, (bowlT + bowlR) / 2, cx0 - bowlHalfW - 1, bowlR - 4, cx0 - 8, bowlR);
+  c.stroke();
+  c.restore();
+
+  // 9. トッピング
   _drawZukanTopping(c, entry.toppingId, cx0, icePeakY, entry);
 
-  // 9. ハイライト（器の上縁）
-  c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 2; c.lineCap = 'round';
-  c.beginPath();
-  c.moveTo(cx0 - bowlHalfW + 4, bowlT + 1);
-  c.bezierCurveTo(cx0 - 10, bowlT - 2, cx0 + 10, bowlT - 2, cx0 + bowlHalfW - 4, bowlT + 1);
-  c.stroke();
-}
-
-// トッピングを小さくミニ描画
-function _drawZukanTopping(c, toppingId, cx0, peakY, entry) {
-  const ty = peakY - 1; // 頂上付近
-  c.save();
-  switch(toppingId) {
-    case 'milk': // 練乳：白いしずく
-      c.fillStyle = 'rgba(255,252,235,0.95)';
-      [[-7,2],[0,-3],[7,2]].forEach(([ox,oy]) => {
-        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 5, 0, 0, Math.PI*2); c.fill();
-      });
-      break;
-    case 'azuki': // あずき：小豆色の楕円
-      [[-6,1],[0,-2],[6,1],[-3,5],[3,5]].forEach(([ox,oy]) => {
-        const ag = c.createRadialGradient(cx0+ox-0.5, ty+oy-0.5, 0.3, cx0+ox, ty+oy, 3.5);
-        ag.addColorStop(0,'#9A4828'); ag.addColorStop(1,'#4A1808');
-        c.fillStyle = ag;
-        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 2.5, 0.2, 0, Math.PI*2); c.fill();
-      });
-      break;
-    case 'cherry': // チェリー：赤い丸2個＋茎
-      c.strokeStyle = '#4A8020'; c.lineWidth = 1.2; c.lineCap = 'round';
-      c.beginPath(); c.moveTo(cx0, ty+2); c.bezierCurveTo(cx0-2, ty-5, cx0+5, ty-7, cx0+4, ty-11); c.stroke();
-      [[cx0+5, ty-12],[cx0-2, ty-8]].forEach(([ex,ey]) => {
-        const cg = c.createRadialGradient(ex-1,ey-1,1,ex,ey,5);
-        cg.addColorStop(0,'#FF7080'); cg.addColorStop(1,'#BB0028');
-        c.fillStyle = cg; c.beginPath(); c.arc(ex, ey, 5, 0, Math.PI*2); c.fill();
-      });
-      c.fillStyle = 'rgba(255,255,255,0.55)';
-      c.beginPath(); c.ellipse(cx0+3, ty-14, 1.5, 1, -0.4, 0, Math.PI*2); c.fill();
-      break;
-    case 'shiratama': // 白玉：白い球3個
-      [[-7,2],[0,-4],[7,2]].forEach(([ox,oy]) => {
-        const sg = c.createRadialGradient(cx0+ox-1.5, ty+oy-1.5, 0.5, cx0+ox, ty+oy, 5.5);
-        sg.addColorStop(0,'rgba(255,255,250,0.98)'); sg.addColorStop(1,'rgba(220,215,205,0.9)');
-        c.fillStyle = sg; c.beginPath(); c.arc(cx0+ox, ty+oy, 5.5, 0, Math.PI*2); c.fill();
-        c.strokeStyle = 'rgba(190,180,165,0.5)'; c.lineWidth = 0.8; c.stroke();
-      });
-      break;
-    case 'icecream': // アイス：丸いスクープ
-      {
-        const ig = c.createRadialGradient(cx0-2, ty-6, 1, cx0, ty-4, 9);
-        ig.addColorStop(0,'#FFFEF8'); ig.addColorStop(0.6,'#F8F0E0'); ig.addColorStop(1,'#EDE0C0');
-        c.fillStyle = ig; c.beginPath(); c.arc(cx0, ty-4, 9, 0, Math.PI*2); c.fill();
-        c.strokeStyle = 'rgba(210,190,160,0.5)'; c.lineWidth = 1; c.stroke();
-        c.fillStyle = 'rgba(255,255,255,0.65)';
-        c.beginPath(); c.ellipse(cx0-3, ty-8, 3.5, 2, -0.3, 0, Math.PI*2); c.fill();
-      }
-      break;
-    case 'mikan': // みかん：オレンジ半月2個
-      [[-8, ty+2],[7, ty+2]].forEach(([mx,my]) => {
-        c.fillStyle = '#E87820';
-        c.beginPath(); c.arc(mx, my, 7, Math.PI, Math.PI*2); c.fill();
-        c.fillStyle = '#F8B040';
-        c.beginPath(); c.arc(mx, my, 5.5, Math.PI, Math.PI*2); c.fill();
-      });
-      break;
-    case 'gold_leaf': // 金箔：金色フレーク
-      [[-8,-2],[0,-6],[8,-2],[4,3],[-4,3]].forEach(([ox,oy]) => {
-        const fg = c.createLinearGradient(cx0+ox-3,ty+oy-3,cx0+ox+3,ty+oy+3);
-        fg.addColorStop(0,'rgba(255,230,80,0.95)'); fg.addColorStop(1,'rgba(200,155,20,0.9)');
-        c.fillStyle = fg; c.save(); c.translate(cx0+ox, ty+oy); c.rotate(ox*0.15);
-        c.beginPath();
-        c.moveTo(0,-4); c.lineTo(2.5,-0.5); c.lineTo(4,2); c.lineTo(0.5,4); c.lineTo(-2.5,2.5); c.lineTo(-4,-0.5);
-        c.closePath(); c.fill(); c.restore();
-      });
-      break;
-    case 'extra_milk': // 練乳マシマシ：大きな白いドリズル
-      c.fillStyle = 'rgba(255,252,240,0.97)';
-      c.beginPath(); c.ellipse(cx0, ty+1, 13, 4, 0, 0, Math.PI*2); c.fill();
-      [[-10,0],[-5,2],[0,-2],[5,2],[10,0]].forEach(([ox,oy]) => {
-        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 5.5, 0, 0, Math.PI*2); c.fill();
-      });
-      break;
-    default:
-      // fallback：白い玉
-      c.fillStyle = 'rgba(255,255,255,0.8)';
-      c.beginPath(); c.arc(cx0, ty, 5, 0, Math.PI*2); c.fill();
-  }
-
-  // 隠しレシピ：金のキラキラを追加
-  if (entry && entry.secret) {
-    c.globalAlpha = 0.85;
-    [[-10,-8],[10,-8],[0,-14],[-12,2],[12,2]].forEach(([ox,oy]) => {
-      c.fillStyle = '#FFD700';
-      c.save(); c.translate(cx0+ox, peakY+oy);
+  // 10. 隠しレシピ：金の輝き（8角スター）
+  if (entry.secret) {
+    c.save();
+    [[-11,-6],[11,-6],[0,-14],[-13,3],[13,3]].forEach(([ox,oy]) => {
+      c.globalAlpha = 0.90;
+      // 外側の輝き
+      const sg = c.createRadialGradient(cx0+ox,icePeakY+oy,0,cx0+ox,icePeakY+oy,5);
+      sg.addColorStop(0,'rgba(255,230,60,0.95)');
+      sg.addColorStop(0.5,'rgba(255,200,0,0.5)');
+      sg.addColorStop(1,'rgba(255,200,0,0)');
+      c.fillStyle = sg;
+      c.beginPath(); c.arc(cx0+ox, icePeakY+oy, 5, 0, Math.PI*2); c.fill();
+      // 中心の白核
+      c.globalAlpha = 0.95;
+      c.fillStyle = '#FFF8C0';
       c.beginPath();
       for (let i=0; i<8; i++) {
-        const a = i/8*Math.PI*2;
-        const r = i%2===0 ? 3.5 : 1.5;
-        const px2 = Math.cos(a)*r, py2 = Math.sin(a)*r;
-        if(i===0) c.moveTo(px2,py2); else c.lineTo(px2,py2);
+        const a = i/8*Math.PI*2 - Math.PI/8;
+        const r2 = i%2===0 ? 3 : 1.2;
+        const px2=Math.cos(a)*r2, py2=Math.sin(a)*r2;
+        if(i===0) c.moveTo(cx0+ox+px2, icePeakY+oy+py2);
+        else c.lineTo(cx0+ox+px2, icePeakY+oy+py2);
       }
-      c.closePath(); c.fill(); c.restore();
+      c.closePath(); c.fill();
     });
     c.globalAlpha = 1;
+    c.restore();
+  }
+}
+
+// トッピングを小さくリアル描画
+function _drawZukanTopping(c, toppingId, cx0, peakY, entry) {
+  const ty = peakY + 2; // 頂上からやや下
+  c.save();
+  switch(toppingId) {
+    case 'milk': { // 練乳：白い光沢のあるドリズル
+      const pos = [[-7,1],[0,-4],[7,1]];
+      pos.forEach(([ox,oy]) => {
+        // 本体しずく
+        const mg = c.createRadialGradient(cx0+ox-1,ty+oy-1,0.3,cx0+ox,ty+oy,4.5);
+        mg.addColorStop(0,'rgba(255,255,248,1)');
+        mg.addColorStop(0.5,'rgba(248,244,228,0.96)');
+        mg.addColorStop(1,'rgba(220,210,185,0.88)');
+        c.fillStyle = mg;
+        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.2, 4.8, 0, 0, Math.PI*2); c.fill();
+        c.strokeStyle='rgba(200,190,160,0.4)'; c.lineWidth=0.6; c.stroke();
+        // ハイライト
+        c.fillStyle='rgba(255,255,255,0.75)';
+        c.beginPath(); c.ellipse(cx0+ox-1, ty+oy-1.5, 1.2, 0.8, -0.3, 0, Math.PI*2); c.fill();
+      });
+      break;
+    }
+    case 'azuki': { // あずき：丸みのある豆、影付き
+      const pos = [[-7,0],[0,-3],[7,0],[-3,4],[3,4]];
+      pos.forEach(([ox,oy]) => {
+        const bx=cx0+ox, by=ty+oy;
+        // 影
+        c.globalAlpha=0.35;
+        c.fillStyle='#2A0A00';
+        c.beginPath(); c.ellipse(bx+1,by+1.5,3,2,0.2,0,Math.PI*2); c.fill();
+        c.globalAlpha=1;
+        // 豆本体
+        const ag = c.createRadialGradient(bx-1,by-1,0.3,bx,by,3.8);
+        ag.addColorStop(0,'#C06040');
+        ag.addColorStop(0.4,'#8A3820');
+        ag.addColorStop(1,'#3A1008');
+        c.fillStyle = ag;
+        c.beginPath(); c.ellipse(bx,by,3.4,2.5,0.2,0,Math.PI*2); c.fill();
+        // ハイライト
+        c.fillStyle='rgba(200,130,90,0.55)';
+        c.beginPath(); c.ellipse(bx-1,by-1,1.2,0.7,-0.3,0,Math.PI*2); c.fill();
+      });
+      break;
+    }
+    case 'cherry': { // チェリー：光沢ある赤い球
+      // 茎（2本）
+      c.strokeStyle='#3A7018'; c.lineWidth=1.3; c.lineCap='round';
+      c.beginPath(); c.moveTo(cx0,ty+3); c.bezierCurveTo(cx0-1,ty-4,cx0+4,ty-6,cx0+4,ty-11); c.stroke();
+      c.beginPath(); c.moveTo(cx0,ty+3); c.bezierCurveTo(cx0+1,ty-4,cx0-5,ty-6,cx0-3,ty-11); c.stroke();
+      // チェリー2個
+      [[cx0+5,ty-12],[cx0-4,ty-12]].forEach(([ex,ey]) => {
+        // 影
+        c.globalAlpha=0.3; c.fillStyle='#600010';
+        c.beginPath(); c.arc(ex+1,ey+1.5,5,0,Math.PI*2); c.fill();
+        c.globalAlpha=1;
+        // 本体
+        const cg = c.createRadialGradient(ex-1.5,ey-2,0.5,ex,ey,5.5);
+        cg.addColorStop(0,'#FF8090');
+        cg.addColorStop(0.35,'#E82040');
+        cg.addColorStop(0.75,'#A00020');
+        cg.addColorStop(1,'#700018');
+        c.fillStyle = cg; c.beginPath(); c.arc(ex,ey,5.5,0,Math.PI*2); c.fill();
+        c.strokeStyle='rgba(100,0,20,0.3)'; c.lineWidth=0.7; c.stroke();
+        // ハイライト（丸い白点）
+        c.fillStyle='rgba(255,255,255,0.72)';
+        c.beginPath(); c.ellipse(ex-2,ey-2.5,2,1.3,-0.4,0,Math.PI*2); c.fill();
+      });
+      break;
+    }
+    case 'shiratama': { // 白玉：陶器のような艶
+      [[-7,1],[0,-4],[7,1]].forEach(([ox,oy]) => {
+        const bx=cx0+ox, by=ty+oy;
+        // 底の影
+        c.globalAlpha=0.2; c.fillStyle='#808070';
+        c.beginPath(); c.ellipse(bx+1,by+1.5,5,2,0,0,Math.PI*2); c.fill();
+        c.globalAlpha=1;
+        // 本体
+        const sg = c.createRadialGradient(bx-2,by-2,0.5,bx,by,6);
+        sg.addColorStop(0,'rgba(255,254,248,1)');
+        sg.addColorStop(0.4,'rgba(242,238,228,0.98)');
+        sg.addColorStop(0.8,'rgba(220,215,200,0.95)');
+        sg.addColorStop(1,'rgba(195,190,175,0.9)');
+        c.fillStyle = sg; c.beginPath(); c.arc(bx,by,6,0,Math.PI*2); c.fill();
+        c.strokeStyle='rgba(180,175,160,0.4)'; c.lineWidth=0.7; c.stroke();
+        // 上ハイライト
+        c.fillStyle='rgba(255,255,255,0.8)';
+        c.beginPath(); c.ellipse(bx-2,by-2.5,2.2,1.3,-0.3,0,Math.PI*2); c.fill();
+        // 薄い影（右下）
+        c.fillStyle='rgba(150,145,130,0.15)';
+        c.beginPath(); c.ellipse(bx+2,by+2,3,1.8,0.4,0,Math.PI*2); c.fill();
+      });
+      break;
+    }
+    case 'icecream': { // アイス：クリーミーなスクープ
+      const icx=cx0, icy=ty-4;
+      // 底の影
+      c.globalAlpha=0.22; c.fillStyle='#808060';
+      c.beginPath(); c.ellipse(icx+1,icy+11.5,9,3,0,0,Math.PI*2); c.fill();
+      c.globalAlpha=1;
+      // 本体（アイス球）
+      const ig2 = c.createRadialGradient(icx-2.5,icy-3,1,icx,icy,10);
+      ig2.addColorStop(0,'#FFFFFB');
+      ig2.addColorStop(0.3,'#FBF4E8');
+      ig2.addColorStop(0.65,'#EDE0C8');
+      ig2.addColorStop(1,'#D8C8A8');
+      c.fillStyle = ig2; c.beginPath(); c.arc(icx,icy,10,0,Math.PI*2); c.fill();
+      c.strokeStyle='rgba(190,170,130,0.4)'; c.lineWidth=0.8; c.stroke();
+      // 上ハイライト（楕円）
+      c.fillStyle='rgba(255,255,255,0.72)';
+      c.beginPath(); c.ellipse(icx-3.5,icy-4.5,4,2.5,-0.3,0,Math.PI*2); c.fill();
+      // 渦巻きライン（質感）
+      c.strokeStyle='rgba(200,185,155,0.5)'; c.lineWidth=1; c.lineCap='round';
+      c.beginPath(); c.moveTo(icx-2,icy-8);
+      c.bezierCurveTo(icx+5,icy-6,icx+7,icy-1,icx+3,icy+2); c.stroke();
+      break;
+    }
+    case 'mikan': { // みかん：果肉の質感
+      [[-9,ty+1],[7,ty+1]].forEach(([mx,my]) => {
+        // 皮（外）
+        const og = c.createRadialGradient(mx-2,my-2,1,mx,my,8);
+        og.addColorStop(0,'#FFC860');
+        og.addColorStop(0.5,'#E87820');
+        og.addColorStop(1,'#C05810');
+        c.fillStyle = og;
+        c.beginPath(); c.arc(mx,my,8,Math.PI,Math.PI*2); c.fill();
+        // 果肉（内）
+        const ig3 = c.createRadialGradient(mx,my-1,0.5,mx,my,6);
+        ig3.addColorStop(0,'#FFD070');
+        ig3.addColorStop(1,'#F09030');
+        c.fillStyle = ig3;
+        c.beginPath(); c.arc(mx,my,6.5,Math.PI,Math.PI*2); c.fill();
+        // 房のライン
+        c.strokeStyle='rgba(230,130,40,0.6)'; c.lineWidth=0.7;
+        for(let i=0;i<5;i++){
+          const a=Math.PI+i/4*Math.PI;
+          c.beginPath(); c.moveTo(mx,my); c.lineTo(mx+Math.cos(a)*6.5,my+Math.sin(a)*6.5); c.stroke();
+        }
+        // 白い筋（アルベド）
+        c.strokeStyle='rgba(255,240,200,0.65)'; c.lineWidth=1;
+        c.beginPath(); c.moveTo(mx-6.5,my); c.lineTo(mx+6.5,my); c.stroke();
+        // ハイライト
+        c.fillStyle='rgba(255,240,180,0.55)';
+        c.beginPath(); c.ellipse(mx-2.5,my-3,2.5,1.5,-0.3,0,Math.PI*2); c.fill();
+      });
+      break;
+    }
+    case 'gold_leaf': { // 金箔：光沢ある不規則なフレーク
+      [[-9,-1],[0,-6],[9,-1],[4,4],[-4,4]].forEach(([ox,oy]) => {
+        c.save(); c.translate(cx0+ox, ty+oy); c.rotate(ox * 0.12);
+        // 影
+        c.globalAlpha=0.25; c.fillStyle='#806000';
+        c.beginPath(); c.moveTo(1,-3); c.lineTo(3.5,-0.5); c.lineTo(4.5,2); c.lineTo(1,4.5); c.lineTo(-3,3); c.lineTo(-4.5,-0.5); c.closePath(); c.fill();
+        c.globalAlpha=1;
+        // 本体
+        const fg = c.createLinearGradient(-3,-4,3,4);
+        fg.addColorStop(0,'rgba(255,240,100,1)');
+        fg.addColorStop(0.4,'rgba(255,215,30,0.98)');
+        fg.addColorStop(0.75,'rgba(200,155,15,0.95)');
+        fg.addColorStop(1,'rgba(160,110,5,0.9)');
+        c.fillStyle = fg;
+        c.beginPath(); c.moveTo(0,-4); c.lineTo(2.8,-0.5); c.lineTo(4.5,2); c.lineTo(0.5,5); c.lineTo(-2.8,3); c.lineTo(-4.5,-0.5); c.closePath(); c.fill();
+        // ハイライト
+        c.fillStyle='rgba(255,255,200,0.7)';
+        c.beginPath(); c.ellipse(-1,-1.5,1.5,0.8,-0.4,0,Math.PI*2); c.fill();
+        c.restore();
+      });
+      break;
+    }
+    case 'extra_milk': { // 練乳マシマシ：厚みある白いドリズル
+      // 土台の広がり
+      const emg = c.createLinearGradient(cx0-14,ty,cx0+14,ty+5);
+      emg.addColorStop(0,'rgba(255,254,245,0.98)');
+      emg.addColorStop(0.5,'rgba(252,248,232,0.95)');
+      emg.addColorStop(1,'rgba(240,235,215,0.88)');
+      c.fillStyle = emg;
+      c.beginPath(); c.ellipse(cx0,ty+2,14,4.5,0,0,Math.PI*2); c.fill();
+      // しずく5本
+      [[-11,0],[-5.5,2],[0,-3],[5.5,2],[11,0]].forEach(([ox,oy]) => {
+        const dg = c.createRadialGradient(cx0+ox-1,ty+oy-1,0.3,cx0+ox,ty+oy,4.5);
+        dg.addColorStop(0,'rgba(255,255,248,1)');
+        dg.addColorStop(0.5,'rgba(248,244,228,0.96)');
+        dg.addColorStop(1,'rgba(225,215,190,0.88)');
+        c.fillStyle = dg;
+        c.beginPath(); c.ellipse(cx0+ox,ty+oy,3.2,5,0,0,Math.PI*2); c.fill();
+        // ハイライト
+        c.fillStyle='rgba(255,255,255,0.7)';
+        c.beginPath(); c.ellipse(cx0+ox-1,ty+oy-1.5,1.2,0.7,-0.3,0,Math.PI*2); c.fill();
+      });
+      break;
+    }
+    default:
+      c.fillStyle = 'rgba(255,255,255,0.85)';
+      c.beginPath(); c.arc(cx0, ty, 5.5, 0, Math.PI*2); c.fill();
   }
   c.restore();
 }
