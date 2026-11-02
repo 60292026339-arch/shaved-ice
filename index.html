@@ -231,12 +231,12 @@ html, body {
   padding: 8px 6px 7px;
   text-align: center;
   box-sizing: border-box;
-  transition: border-color .15s, background .15s;
+  transition: border-color .15s, background .15s, box-shadow .15s;
 }
 .zk-entry.found {
   border-color: #9060D8;
-  background: linear-gradient(160deg, #F0E8FF, #EAF4FF);
-  box-shadow: 0 2px 8px rgba(120,60,200,0.15);
+  background: linear-gradient(160deg, #F2E8FF, #E8F4FF);
+  box-shadow: 0 3px 12px rgba(120,60,200,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
 }
 .zk-entry.secret {
   border-color: #D0A000;
@@ -245,12 +245,19 @@ html, body {
 .zk-entry.secret.found {
   border-color: #E8B000;
   background: linear-gradient(160deg, #FFF5A0, #FFE880);
-  box-shadow: 0 2px 12px rgba(200,160,0,0.30);
+  box-shadow: 0 3px 16px rgba(200,160,0,0.30), inset 0 1px 0 rgba(255,255,255,0.8);
 }
-.zk-entry .zk-icon-big { font-size: 28px; margin-bottom: 3px; }
+.zk-entry .zk-canvas-wrap {
+  width: 72px; height: 72px;
+  margin: 0 auto 4px;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(100,60,180,0.12);
+}
+.zk-entry .zk-canvas-wrap canvas { display: block; }
 .zk-entry .zk-name { font-size: 12px; font-weight: bold; color: #4A2080; }
 .zk-entry .zk-sub  { font-size: 10px; color: #8060A0; margin-top: 2px; }
-.zk-entry.unknown .zk-icon-big { filter: grayscale(1) brightness(0.45); }
 .zk-entry.unknown .zk-name { color: #AAA; }
 .zk-entry.unknown .zk-sub  { color: #CCC; }
 .zk-entry.unknown { border-color: #C0B0D0; background: #F0EAF8; }
@@ -3430,6 +3437,257 @@ function zukanCheck(successSyrups, successToppingId) {
   return unlocked;
 }
 
+// ── ミニチュアかき氷 Canvas 描画 ─────────────────────────
+// entry の syrupNames / toppingId から色を引いて 72×72 px に描画する。
+// isFound=false のときはグレースケールの半透明シルエット。
+
+// シロップ名 → 色情報マップ（SYRUPS 配列と同期）
+const ZUKAN_SYRUP_COLOR = {
+  'イチゴ':      { main:'#E8224A', light:'#FF8899' },
+  'ブルーハワイ': { main:'#1878E8', light:'#70B8FF' },
+  'メロン':      { main:'#28A040', light:'#80DC90' },
+  'レモン':      { main:'#E8D020', light:'#FFF080' },
+  '抹茶':        { main:'#4A8020', light:'#90C060' },
+  'コーラ':      { main:'#5A3010', light:'#A06030' },
+  'マンゴー':    { main:'#E87010', light:'#FFC060' },
+  'レインボー':  { main:'rainbow', light:'rainbow' },
+};
+
+function drawZukanCanvas(canvas, entry, isFound) {
+  const c = canvas.getContext('2d');
+  const W = 72, H = 72;
+  c.clearRect(0, 0, W, H);
+
+  // ── 共通座標 ──────────────────────────────────────────
+  const cx0 = W / 2;           // 水平中心
+  const bowlT = 42;            // 器の上端Y
+  const bowlB = 66;            // 器の底Y
+  const iceBaseY = bowlT + 1;  // 氷の根元Y
+  const icePeakY = 12;         // 氷の頂点Y
+  const bowlHalfW = 26;        // 器の半幅
+
+  // 氷の山パス（clipping 用）
+  function icePath() {
+    c.beginPath();
+    c.moveTo(cx0 - bowlHalfW, iceBaseY);
+    c.bezierCurveTo(cx0 - bowlHalfW, icePeakY + 8, cx0 - 16, icePeakY, cx0, icePeakY);
+    c.bezierCurveTo(cx0 + 16, icePeakY, cx0 + bowlHalfW, icePeakY + 8, cx0 + bowlHalfW, iceBaseY);
+    c.closePath();
+  }
+
+  if (!isFound) {
+    // ── 未発見：半透明グレーシルエット ───────────────────
+    c.save();
+    c.globalAlpha = 0.28;
+
+    // 台
+    c.fillStyle = '#888';
+    c.beginPath(); c.ellipse(cx0, bowlB + 3, 20, 5, 0, 0, Math.PI * 2); c.fill();
+    // 器
+    c.fillStyle = '#AAA';
+    c.beginPath();
+    c.moveTo(cx0 - bowlHalfW, bowlT);
+    c.bezierCurveTo(cx0 - bowlHalfW - 2, bowlB, cx0 + bowlHalfW + 2, bowlB, cx0 + bowlHalfW, bowlT);
+    c.closePath(); c.fill();
+    // 氷
+    c.fillStyle = '#CCC';
+    icePath(); c.fill();
+    // ? テキスト
+    c.globalAlpha = 0.55;
+    c.fillStyle = '#666';
+    c.font = 'bold 20px sans-serif';
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('?', cx0, H / 2 - 2);
+    c.restore();
+    return;
+  }
+
+  // ── 発見済み：色付き立体描画 ──────────────────────────
+
+  // 1. 背景（空の薄いグラデ）
+  const bgG = c.createLinearGradient(0, 0, 0, H);
+  bgG.addColorStop(0, '#D4EEFF');
+  bgG.addColorStop(1, '#F0F8E8');
+  c.fillStyle = bgG; c.fillRect(0, 0, W, H);
+
+  // 2. 木台
+  const woodG = c.createLinearGradient(cx0 - 22, bowlB + 1, cx0 + 22, bowlB + 1);
+  woodG.addColorStop(0, '#B07A30'); woodG.addColorStop(0.5, '#D4A050'); woodG.addColorStop(1, '#B07A30');
+  c.fillStyle = woodG;
+  c.beginPath(); c.ellipse(cx0, bowlB + 3, 22, 5, 0, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = '#8A5A18'; c.lineWidth = 1; c.stroke();
+
+  // 3. ガラス器（半透明）
+  c.save();
+  const bowlG = c.createLinearGradient(cx0 - bowlHalfW, bowlT, cx0 + bowlHalfW, bowlB);
+  bowlG.addColorStop(0, 'rgba(210,238,255,0.6)');
+  bowlG.addColorStop(1, 'rgba(190,226,255,0.3)');
+  c.fillStyle = bowlG;
+  c.beginPath();
+  c.moveTo(cx0 - bowlHalfW, bowlT);
+  c.bezierCurveTo(cx0 - bowlHalfW - 2, bowlB, cx0 + bowlHalfW + 2, bowlB, cx0 + bowlHalfW, bowlT);
+  c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(140,200,240,0.8)'; c.lineWidth = 1.5; c.stroke();
+  c.restore();
+
+  // 4. 氷の山（白ベース）
+  c.save();
+  icePath(); c.clip();
+  const iceG = c.createLinearGradient(cx0, icePeakY, cx0, iceBaseY);
+  iceG.addColorStop(0, '#F4FEFF'); iceG.addColorStop(1, '#D8F0FF');
+  c.fillStyle = iceG; c.fillRect(0, 0, W, H);
+
+  // 5. シロップ色を氷に乗せる
+  const syrupNames = entry.syrupNames;
+  if (syrupNames.includes('レインボー')) {
+    // レインボー：5色縦バンド
+    const rbCols = ['#FF5060','#FFE040','#50D060','#50C8FF','#FF80C8'];
+    const bh = (iceBaseY - icePeakY) / rbCols.length;
+    rbCols.forEach((col, i) => {
+      c.fillStyle = col;
+      c.globalAlpha = 0.82;
+      c.fillRect(0, icePeakY + i * bh, W, bh + 1);
+    });
+  } else {
+    // 単色 or 2色：放射状グラデ（複数は alpha 分割）
+    const alphaEach = 0.76 / syrupNames.length;
+    syrupNames.forEach(sn => {
+      const sc = ZUKAN_SYRUP_COLOR[sn] || { main:'#888', light:'#CCC' };
+      c.globalAlpha = alphaEach;
+      const rg = c.createRadialGradient(cx0, iceBaseY, 2, cx0, icePeakY + 6, (iceBaseY - icePeakY) * 0.95);
+      rg.addColorStop(0, sc.main + 'FF');
+      rg.addColorStop(0.55, sc.main + 'CC');
+      rg.addColorStop(1, sc.main + '44');
+      c.fillStyle = rg;
+      c.fillRect(0, 0, W, H);
+    });
+  }
+  c.globalAlpha = 1;
+
+  // 6. 氷の光沢シマー
+  c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    const ly = icePeakY + 5 + i * 8;
+    const hw = 18 - i * 4;
+    c.beginPath(); c.moveTo(cx0 - hw, ly + 2);
+    c.quadraticCurveTo(cx0, ly, cx0 + hw, ly + 2); c.stroke();
+  }
+  c.restore();
+
+  // 7. 氷の輪郭
+  c.strokeStyle = 'rgba(200,230,255,0.7)'; c.lineWidth = 1;
+  icePath(); c.stroke();
+
+  // 8. トッピング（小さく・アイコンで再現）
+  _drawZukanTopping(c, entry.toppingId, cx0, icePeakY, entry);
+
+  // 9. ハイライト（器の上縁）
+  c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 2; c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(cx0 - bowlHalfW + 4, bowlT + 1);
+  c.bezierCurveTo(cx0 - 10, bowlT - 2, cx0 + 10, bowlT - 2, cx0 + bowlHalfW - 4, bowlT + 1);
+  c.stroke();
+}
+
+// トッピングを小さくミニ描画
+function _drawZukanTopping(c, toppingId, cx0, peakY, entry) {
+  const ty = peakY - 1; // 頂上付近
+  c.save();
+  switch(toppingId) {
+    case 'milk': // 練乳：白いしずく
+      c.fillStyle = 'rgba(255,252,235,0.95)';
+      [[-7,2],[0,-3],[7,2]].forEach(([ox,oy]) => {
+        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 5, 0, 0, Math.PI*2); c.fill();
+      });
+      break;
+    case 'azuki': // あずき：小豆色の楕円
+      [[-6,1],[0,-2],[6,1],[-3,5],[3,5]].forEach(([ox,oy]) => {
+        const ag = c.createRadialGradient(cx0+ox-0.5, ty+oy-0.5, 0.3, cx0+ox, ty+oy, 3.5);
+        ag.addColorStop(0,'#9A4828'); ag.addColorStop(1,'#4A1808');
+        c.fillStyle = ag;
+        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 2.5, 0.2, 0, Math.PI*2); c.fill();
+      });
+      break;
+    case 'cherry': // チェリー：赤い丸2個＋茎
+      c.strokeStyle = '#4A8020'; c.lineWidth = 1.2; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(cx0, ty+2); c.bezierCurveTo(cx0-2, ty-5, cx0+5, ty-7, cx0+4, ty-11); c.stroke();
+      [[cx0+5, ty-12],[cx0-2, ty-8]].forEach(([ex,ey]) => {
+        const cg = c.createRadialGradient(ex-1,ey-1,1,ex,ey,5);
+        cg.addColorStop(0,'#FF7080'); cg.addColorStop(1,'#BB0028');
+        c.fillStyle = cg; c.beginPath(); c.arc(ex, ey, 5, 0, Math.PI*2); c.fill();
+      });
+      c.fillStyle = 'rgba(255,255,255,0.55)';
+      c.beginPath(); c.ellipse(cx0+3, ty-14, 1.5, 1, -0.4, 0, Math.PI*2); c.fill();
+      break;
+    case 'shiratama': // 白玉：白い球3個
+      [[-7,2],[0,-4],[7,2]].forEach(([ox,oy]) => {
+        const sg = c.createRadialGradient(cx0+ox-1.5, ty+oy-1.5, 0.5, cx0+ox, ty+oy, 5.5);
+        sg.addColorStop(0,'rgba(255,255,250,0.98)'); sg.addColorStop(1,'rgba(220,215,205,0.9)');
+        c.fillStyle = sg; c.beginPath(); c.arc(cx0+ox, ty+oy, 5.5, 0, Math.PI*2); c.fill();
+        c.strokeStyle = 'rgba(190,180,165,0.5)'; c.lineWidth = 0.8; c.stroke();
+      });
+      break;
+    case 'icecream': // アイス：丸いスクープ
+      {
+        const ig = c.createRadialGradient(cx0-2, ty-6, 1, cx0, ty-4, 9);
+        ig.addColorStop(0,'#FFFEF8'); ig.addColorStop(0.6,'#F8F0E0'); ig.addColorStop(1,'#EDE0C0');
+        c.fillStyle = ig; c.beginPath(); c.arc(cx0, ty-4, 9, 0, Math.PI*2); c.fill();
+        c.strokeStyle = 'rgba(210,190,160,0.5)'; c.lineWidth = 1; c.stroke();
+        c.fillStyle = 'rgba(255,255,255,0.65)';
+        c.beginPath(); c.ellipse(cx0-3, ty-8, 3.5, 2, -0.3, 0, Math.PI*2); c.fill();
+      }
+      break;
+    case 'mikan': // みかん：オレンジ半月2個
+      [[-8, ty+2],[7, ty+2]].forEach(([mx,my]) => {
+        c.fillStyle = '#E87820';
+        c.beginPath(); c.arc(mx, my, 7, Math.PI, Math.PI*2); c.fill();
+        c.fillStyle = '#F8B040';
+        c.beginPath(); c.arc(mx, my, 5.5, Math.PI, Math.PI*2); c.fill();
+      });
+      break;
+    case 'gold_leaf': // 金箔：金色フレーク
+      [[-8,-2],[0,-6],[8,-2],[4,3],[-4,3]].forEach(([ox,oy]) => {
+        const fg = c.createLinearGradient(cx0+ox-3,ty+oy-3,cx0+ox+3,ty+oy+3);
+        fg.addColorStop(0,'rgba(255,230,80,0.95)'); fg.addColorStop(1,'rgba(200,155,20,0.9)');
+        c.fillStyle = fg; c.save(); c.translate(cx0+ox, ty+oy); c.rotate(ox*0.15);
+        c.beginPath();
+        c.moveTo(0,-4); c.lineTo(2.5,-0.5); c.lineTo(4,2); c.lineTo(0.5,4); c.lineTo(-2.5,2.5); c.lineTo(-4,-0.5);
+        c.closePath(); c.fill(); c.restore();
+      });
+      break;
+    case 'extra_milk': // 練乳マシマシ：大きな白いドリズル
+      c.fillStyle = 'rgba(255,252,240,0.97)';
+      c.beginPath(); c.ellipse(cx0, ty+1, 13, 4, 0, 0, Math.PI*2); c.fill();
+      [[-10,0],[-5,2],[0,-2],[5,2],[10,0]].forEach(([ox,oy]) => {
+        c.beginPath(); c.ellipse(cx0+ox, ty+oy, 3.5, 5.5, 0, 0, Math.PI*2); c.fill();
+      });
+      break;
+    default:
+      // fallback：白い玉
+      c.fillStyle = 'rgba(255,255,255,0.8)';
+      c.beginPath(); c.arc(cx0, ty, 5, 0, Math.PI*2); c.fill();
+  }
+
+  // 隠しレシピ：金のキラキラを追加
+  if (entry && entry.secret) {
+    c.globalAlpha = 0.85;
+    [[-10,-8],[10,-8],[0,-14],[-12,2],[12,2]].forEach(([ox,oy]) => {
+      c.fillStyle = '#FFD700';
+      c.save(); c.translate(cx0+ox, peakY+oy);
+      c.beginPath();
+      for (let i=0; i<8; i++) {
+        const a = i/8*Math.PI*2;
+        const r = i%2===0 ? 3.5 : 1.5;
+        const px2 = Math.cos(a)*r, py2 = Math.sin(a)*r;
+        if(i===0) c.moveTo(px2,py2); else c.lineTo(px2,py2);
+      }
+      c.closePath(); c.fill(); c.restore();
+    });
+    c.globalAlpha = 1;
+  }
+  c.restore();
+}
+
 // ── 図鑑モーダルを開く ───────────────────────────────────
 function openZukan() {
   renderZukan();
@@ -3480,9 +3738,13 @@ function renderZukan() {
         (isFound ? ' found' : ' unknown') +
         (entry.secret ? ' secret' : '');
 
-      const iconDiv = document.createElement('div');
-      iconDiv.className = 'zk-icon-big';
-      iconDiv.textContent = isFound ? entry.icon : '？';
+      // ── ミニチュアかき氷 Canvas ───────────────────────────
+      const wrap = document.createElement('div');
+      wrap.className = 'zk-canvas-wrap';
+      const cvs = document.createElement('canvas');
+      cvs.width = 72; cvs.height = 72;
+      drawZukanCanvas(cvs, entry, isFound);
+      wrap.appendChild(cvs);
 
       const nameDiv = document.createElement('div');
       nameDiv.className = 'zk-name';
@@ -3492,7 +3754,7 @@ function renderZukan() {
       subDiv.className = 'zk-sub';
       subDiv.textContent = isFound ? entry.sub : '未発見';
 
-      div.appendChild(iconDiv);
+      div.appendChild(wrap);
       div.appendChild(nameDiv);
       div.appendChild(subDiv);
       grid.appendChild(div);
