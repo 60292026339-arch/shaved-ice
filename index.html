@@ -155,6 +155,106 @@ html, body {
 #shopTrigger .shop-label { font-size: 10px; font-weight: bold; color: #804000; letter-spacing: .5px; }
 #shopTrigger .shop-coin  { font-size: 11px; font-weight: bold; color: #5A3000; }
 
+/* ─── 図鑑ボタン ─────────────────────────────────────────── */
+#zukanTrigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(200, 160, 240, 0.92);
+  border: 2px solid #8050C0;
+  border-radius: 12px;
+  padding: 6px 8px 5px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  user-select: none;
+  min-width: 52px;
+  transition: background .15s, transform .12s;
+}
+#zukanTrigger:hover  { background: rgba(220,190,255,0.98); transform: scale(1.06); }
+#zukanTrigger:active { transform: scale(0.96); }
+#zukanTrigger .zk-icon  { font-size: 22px; line-height: 1; }
+#zukanTrigger .zk-label { font-size: 10px; font-weight: bold; color: #4A2080; letter-spacing: .5px; }
+
+/* ─── 図鑑モーダル ───────────────────────────────────────── */
+#zukanOverlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(20, 10, 40, 0.80);
+  z-index: 120;
+  align-items: center; justify-content: center;
+}
+#zukanOverlay.open { display: flex; }
+#zukanModal {
+  position: relative;
+  background: linear-gradient(160deg, #FDF0FF, #F0F8FF);
+  border-radius: 20px;
+  border: 3px solid #A070D8;
+  box-shadow: 0 8px 40px rgba(80,20,160,0.35);
+  width: min(500px, 97vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 18px 16px 16px;
+  position: relative;
+}
+#zukanClose {
+  position: absolute; top: 10px; right: 14px;
+  background: none; border: none; font-size: 22px; cursor: pointer;
+  color: #8050C0; line-height: 1;
+}
+#zukanClose:hover { color: #E82020; }
+#zukanModal h2 {
+  text-align: center; font-size: 20px; font-weight: bold;
+  color: #5020A0; margin-bottom: 6px; letter-spacing: 1px;
+}
+#zukanProgress {
+  text-align: center; font-size: 14px; font-weight: bold;
+  color: #7040B0; background: rgba(180,140,255,0.18);
+  border-radius: 8px; padding: 4px 0; margin-bottom: 14px;
+}
+.zk-section { margin-bottom: 16px; }
+.zk-section h3 {
+  font-size: 13px; font-weight: bold; color: #7040B0;
+  border-bottom: 1.5px solid #D0B0F0; padding-bottom: 4px; margin-bottom: 8px;
+}
+.zk-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.zk-entry {
+  flex: 0 0 auto;
+  width: calc(33.33% - 6px);
+  min-width: 110px;
+  max-width: 148px;
+  border: 2px solid #C8A8F0;
+  border-radius: 12px;
+  background: #F8F0FF;
+  padding: 8px 6px 7px;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color .15s, background .15s;
+}
+.zk-entry.found {
+  border-color: #9060D8;
+  background: linear-gradient(160deg, #F0E8FF, #EAF4FF);
+  box-shadow: 0 2px 8px rgba(120,60,200,0.15);
+}
+.zk-entry.secret {
+  border-color: #D0A000;
+  background: linear-gradient(160deg, #FFFBE0, #FFF0C8);
+}
+.zk-entry.secret.found {
+  border-color: #E8B000;
+  background: linear-gradient(160deg, #FFF5A0, #FFE880);
+  box-shadow: 0 2px 12px rgba(200,160,0,0.30);
+}
+.zk-entry .zk-icon-big { font-size: 28px; margin-bottom: 3px; }
+.zk-entry .zk-name { font-size: 12px; font-weight: bold; color: #4A2080; }
+.zk-entry .zk-sub  { font-size: 10px; color: #8060A0; margin-top: 2px; }
+.zk-entry.unknown .zk-icon-big { filter: grayscale(1) brightness(0.45); }
+.zk-entry.unknown .zk-name { color: #AAA; }
+.zk-entry.unknown .zk-sub  { color: #CCC; }
+.zk-entry.unknown { border-color: #C0B0D0; background: #F0EAF8; }
+
 /* ─── タイピングミニゲームモーダル ──────────────────────── */
 #typingOverlay {
   display: none;
@@ -266,6 +366,11 @@ html, body {
 
 <!-- 右上ボタン群（ミニゲーム＋ショップ・横並び固定・Canvas外） -->
 <div id="topRightBtns">
+  <!-- 図鑑ボタン -->
+  <div id="zukanTrigger" onclick="openZukan()">
+    <span class="zk-icon">📖</span>
+    <span class="zk-label">図鑑</span>
+  </div>
   <!-- ミニゲーム起動ボタン -->
   <div id="minigameTrigger" onclick="openTypingGame()">
     <span class="mg-icon">🎮</span>
@@ -276,6 +381,17 @@ html, body {
     <span class="shop-icon">🛒</span>
     <span class="shop-label">ショップ</span>
     <span class="shop-coin" id="triggerCoinDisplay">🪙 0</span>
+  </div>
+</div>
+
+<!-- 図鑑モーダル -->
+<div id="zukanOverlay">
+  <div id="zukanModal">
+    <button id="zukanClose" onclick="closeZukan()">✕</button>
+    <h2>📖 かき氷図鑑</h2>
+    <div id="zukanProgress">コンプリート率: 0 / 0 (0%)</div>
+    <!-- セクションはJS側で動的生成 -->
+    <div id="zukanBody"></div>
   </div>
 </div>
 
@@ -1280,6 +1396,7 @@ function selTopping(t){
     if(ok){
       const pts = base + Math.max(0,timer); score+=pts; serveCount++;
       addCoins(pts);  // ショップ用コインも同額加算
+      zukanCheck(chosenSyrups, t.id); // 図鑑判定（独立処理・ゲーム変数への書き込みなし）
       if(AC) seOk();
       popup('GREAT! +'+pts, ICE_X, ICE_Y-120, '#FFD700', true);
     } else {
@@ -3206,6 +3323,184 @@ function closeTypingGame(){
   document.getElementById('typingOverlay').classList.remove('open');
   const inp = document.getElementById('typingInput');
   if(inp){ inp.value=''; inp.oninput=null; inp.blur(); }
+}
+
+// ─── かき氷図鑑システム（完全独立・既存コードに非影響） ────────
+
+// ── 図鑑エントリ定義 ──────────────────────────────────────
+// id: LocalStorage キーに使う一意文字列
+// syrupNames: シロップ名の配列（複数可）
+// toppingId: トッピング id
+// secret: 隠しレシピフラグ
+// condition: 解放判定（省略時は通常の ok 提供で解放）
+const ZUKAN_ENTRIES = (() => {
+  // 通常レシピ：基本7シロップ × 基本6トッピング = 42種
+  const BASE_SYRUPS   = ['イチゴ','ブルーハワイ','メロン','レモン','抹茶','コーラ','マンゴー'];
+  const BASE_TOPPINGS = [
+    {id:'milk',      label:'🥛', name:'練乳'},
+    {id:'azuki',     label:'🫘', name:'あずき'},
+    {id:'cherry',    label:'🍒', name:'チェリー'},
+    {id:'shiratama', label:'🍡', name:'白玉'},
+    {id:'icecream',  label:'🍨', name:'アイス'},
+    {id:'mikan',     label:'🍊', name:'みかん'},
+  ];
+  const SYRUP_LABELS = {
+    'イチゴ':'🍓','ブルーハワイ':'🌊','メロン':'🍈',
+    'レモン':'🍋','抹茶':'🍵','コーラ':'🥤','マンゴー':'🥭',
+  };
+  const normal = [];
+  BASE_SYRUPS.forEach(sn => {
+    BASE_TOPPINGS.forEach(tp => {
+      normal.push({
+        id: `std_${sn}_${tp.id}`,
+        icon: SYRUP_LABELS[sn] + tp.label,
+        name: `${sn}かき氷`,
+        sub: `トッピング：${tp.name}`,
+        syrupNames: [sn], toppingId: tp.id,
+        secret: false,
+      });
+    });
+  });
+
+  // 限定レシピ：レインボー × 各トッピング（6種）
+  BASE_TOPPINGS.forEach(tp => {
+    normal.push({
+      id: `rainbow_${tp.id}`,
+      icon: '🌈' + tp.label,
+      name: 'レインボーかき氷',
+      sub: `トッピング：${tp.name}`,
+      syrupNames: ['レインボー'], toppingId: tp.id,
+      secret: false,
+    });
+  });
+
+  // 隠しレシピ1：レインボー＋金箔（ショップ購入アイテム2種の組み合わせ）
+  normal.push({
+    id: 'secret_rainbow_goldleaf',
+    icon: '🌈✨',
+    name: '✨ 極・レインボーかき氷',
+    sub: '隠しレシピ：レインボー＋金箔',
+    syrupNames: ['レインボー'], toppingId: 'gold_leaf',
+    secret: true,
+  });
+
+  // 隠しレシピ2：イチゴ＋メロン（2色）＋チェリー ― 2シロップの初めての組み合わせ
+  normal.push({
+    id: 'secret_iche_melo_cherry',
+    icon: '🍓🍈🍒',
+    name: '✨ サマーサンデー',
+    sub: '隠しレシピ：イチゴ＋メロン＋チェリー',
+    syrupNames: ['イチゴ','メロン'], toppingId: 'cherry',
+    secret: true,
+  });
+
+  return normal;
+})();
+
+// ── LocalStorage 読み書き ─────────────────────────────────
+const ZUKAN_LS_KEY = 'kakigori_zukan';
+function zukanLoad() {
+  try {
+    const raw = localStorage.getItem(ZUKAN_LS_KEY);
+    if (raw) return new Set(JSON.parse(raw));
+  } catch(e) {}
+  return new Set();
+}
+function zukanSave(set) {
+  try { localStorage.setItem(ZUKAN_LS_KEY, JSON.stringify([...set])); } catch(e) {}
+}
+let zukanFound = zukanLoad(); // 発見済み id の Set
+
+// ── 提供時の解放判定（selTopping の ok ブロックから呼ぶ） ────
+// 既存コードの変数（chosenSyrups, appliedTopping）を読み取るだけ・書き込みなし
+function zukanCheck(successSyrups, successToppingId) {
+  let unlocked = false;
+  ZUKAN_ENTRIES.forEach(entry => {
+    if (zukanFound.has(entry.id)) return;
+    const syrupMatch =
+      entry.syrupNames.length === successSyrups.length &&
+      entry.syrupNames.every(sn => successSyrups.some(s => s.name === sn));
+    const toppingMatch = entry.toppingId === successToppingId;
+    if (syrupMatch && toppingMatch) {
+      zukanFound.add(entry.id);
+      unlocked = true;
+    }
+  });
+  if (unlocked) zukanSave(zukanFound);
+  return unlocked;
+}
+
+// ── 図鑑モーダルを開く ───────────────────────────────────
+function openZukan() {
+  renderZukan();
+  document.getElementById('zukanOverlay').classList.add('open');
+}
+function closeZukan() {
+  document.getElementById('zukanOverlay').classList.remove('open');
+}
+
+// ── 図鑑レンダリング ──────────────────────────────────────
+function renderZukan() {
+  const total   = ZUKAN_ENTRIES.length;
+  const found   = ZUKAN_ENTRIES.filter(e => zukanFound.has(e.id)).length;
+  const pct     = total > 0 ? Math.round(found / total * 100) : 0;
+
+  document.getElementById('zukanProgress').textContent =
+    `コンプリート率: ${found} / ${total} (${pct}%)`;
+
+  const body = document.getElementById('zukanBody');
+  body.innerHTML = '';
+
+  // セクション分け：通常・レインボー・隠し
+  const sections = [
+    { title: '🍧 スタンダード（基本7フレーバー）',
+      entries: ZUKAN_ENTRIES.filter(e => !e.secret && !e.syrupNames.includes('レインボー')) },
+    { title: '🌈 レインボーシリーズ',
+      entries: ZUKAN_ENTRIES.filter(e => !e.secret && e.syrupNames.includes('レインボー')) },
+    { title: '✨ 隠しレシピ',
+      entries: ZUKAN_ENTRIES.filter(e => e.secret) },
+  ];
+
+  sections.forEach(sec => {
+    if (!sec.entries.length) return;
+    const section = document.createElement('div');
+    section.className = 'zk-section';
+
+    const h3 = document.createElement('h3');
+    h3.textContent = sec.title;
+    section.appendChild(h3);
+
+    const grid = document.createElement('div');
+    grid.className = 'zk-grid';
+
+    sec.entries.forEach(entry => {
+      const isFound = zukanFound.has(entry.id);
+      const div = document.createElement('div');
+      div.className = 'zk-entry' +
+        (isFound ? ' found' : ' unknown') +
+        (entry.secret ? ' secret' : '');
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'zk-icon-big';
+      iconDiv.textContent = isFound ? entry.icon : '？';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'zk-name';
+      nameDiv.textContent = isFound ? entry.name : '？？？';
+
+      const subDiv = document.createElement('div');
+      subDiv.className = 'zk-sub';
+      subDiv.textContent = isFound ? entry.sub : '未発見';
+
+      div.appendChild(iconDiv);
+      div.appendChild(nameDiv);
+      div.appendChild(subDiv);
+      grid.appendChild(div);
+    });
+
+    section.appendChild(grid);
+    body.appendChild(section);
+  });
 }
 
 document.addEventListener('keydown', e=>{
